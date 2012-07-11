@@ -1,0 +1,5 @@
+name = Weather
+description = Custom Weather Module
+
+php = 5.1
+core = 6.x

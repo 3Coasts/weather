@@ -1,0 +1,56 @@
+<?php
+function weather_menu() {
+	$items = array();
+
+	$items['weather-weather'] = array(
+		'title' => 'Weather Feed',
+		'page callback' => 'weather_weather',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+
+	return $items;
+}
+
+
+function weather_weather(){
+	$ch = curl_init("http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=New%20Orleans,LA");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+    $str = curl_exec($ch); 
+	curl_close($ch);
+	$xml = new SimpleXMLElement($str);
+	$str = "";
+	$str .= "<div class=icon><img src='" . base_path() . drupal_get_path('module', "weather") . "/images/" . $xml->txt_forecast->forecastday[0]->icon . ".png' /></div>";
+	$str .= "<div class=summary>" . $xml->txt_forecast->forecastday[0]->fcttext . "</div>";
+	$str .= "<div class=temp>" . $xml->simpleforecast->forecastday[0]->high->fahrenheit . "&deg; / " . $xml->simpleforecast->forecastday[0]->low->fahrenheit . "&deg;</div>";
+	return $str;
+}
+
+
+function weather_block($op='list', $delta=0, $edit=array()) {
+	switch ($op) {
+		case 'list':
+			$blocks[0]['info'] = t('Pullen Weather');
+			return $blocks;
+		case 'view':
+
+			$ch = curl_init("http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=New%20Orleans,LA");
+		    curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+		    $str = curl_exec($ch); 
+			curl_close($ch);
+			$xml = new SimpleXMLElement($str);
+			$str = "";
+			$str .= "<div class=\"icon\"><img alt=\"Current Weather Conditions\" src='" . base_path() . drupal_get_path('module', "weather") . "/images/" . $xml->txt_forecast->forecastday[0]->icon . ".png' /></div>";
+			$str .= "<div class=\"temp\">" . $xml->simpleforecast->forecastday[0]->high->fahrenheit . "&deg; / " . $xml->simpleforecast->forecastday[0]->low->fahrenheit . "&deg;</div>";
+			$str .= "<div class=\"summary\">" . $xml->txt_forecast->forecastday[0]->fcttext . "</div>";
+		
+			$blocks['subject'] = t('Current Weather Conditions');
+			$blocks['content'] = $str;
+			return $blocks;
+	}
+}
+
+
+
+
+?>
